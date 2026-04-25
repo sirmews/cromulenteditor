@@ -287,6 +287,9 @@ function App() {
       </Sidebar>
 
       <SidebarInset>
+        <div className="shrink-0 bg-amber-500 text-amber-950 text-xs font-semibold text-center py-1.5 px-4">
+          This is purely an experiment. Do not use this for anything important.
+        </div>
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2">
             <SidebarTrigger />
