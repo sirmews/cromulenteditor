@@ -1,5 +1,7 @@
 # CromulentEditor
 
+> **Work in progress — entirely experimental.** This project is an exploration of how far browser-based local LLMs can go. It is not a production tool (yet). Expect rough edges, missing features, and things that might break.
+
 > A document editor with a local AI assistant that runs **entirely in your browser** — no backend, no API keys, no data ever leaves your machine.
 
 CromulentEditor uses modern web technologies to bring a capable text-generation model directly into the browser via [HuggingFace Transformers.js](https://huggingface.co/docs/transformers.js/). It downloads and caches the model using the Origin Private File System (OPFS), then runs inference on-device using WebGPU (with a WASM fallback for unsupported hardware). The result is a fully offline-capable, privacy-preserving writing tool.
