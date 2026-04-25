@@ -276,10 +276,17 @@ function App() {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip="GitHub">
-                <Github />
-                <span>GitHub</span>
-              </SidebarMenuButton>
+              <a
+                href="https://github.com/sirmews/cromulenteditor"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="contents"
+              >
+                <SidebarMenuButton tooltip="GitHub">
+                  <Github />
+                  <span>GitHub</span>
+                </SidebarMenuButton>
+              </a>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
