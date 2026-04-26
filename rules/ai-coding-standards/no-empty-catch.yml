@@ -4,7 +4,7 @@ severity: warning
 language: TypeScript
 message: "Empty catch block without explanation. Add a comment explaining why errors are ignored."
 rule:
-  regex: '^\s*catch\s*\{[\s]*\}'
+  regex: 'catch\s*(?:\([^)]*\))?\s*\{[\s]*\}'
   kind: catch_clause
 files:
   - 'src/**/*.ts'
