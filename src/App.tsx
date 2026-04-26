@@ -5,12 +5,14 @@ import {
   Github,
   Moon,
   PenLine,
+  Plus,
   Sparkles,
   Sun,
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Sidebar,
@@ -38,11 +40,20 @@ import {
   loadModel,
   setModelDtype
 } from '@/lib/bonsai';
+import {
+  createDocument,
+  type DocumentStore,
+  deleteDocument,
+  loadStore,
+  saveActiveDocId,
+  saveDocuments,
+  updateDocument
+} from '@/lib/storage';
 import { DocumentEditor } from './components/editor/DocumentEditor';
 
 function App() {
   const { theme, setTheme } = useTheme();
-  const [documentTitle, setDocumentTitle] = useState('Untitled');
+  const [store, setStore] = useState<DocumentStore>(loadStore);
   const [modelStatus, setModelStatus] = useState<ModelStatus>(
     isModelLoaded() ? 'ready' : 'idle'
   );
@@ -50,20 +61,63 @@ function App() {
   const [downloadFile, setDownloadFile] = useState('');
   const [selectedDtype, setSelectedDtype] = useState<ModelDtype>('q1');
 
-  const initialContent = (() => {
-    try {
-      return localStorage.getItem('cromulent:content') ?? undefined;
-    } catch {
-      return undefined;
-    }
-  })();
+  const activeDoc =
+    store.activeDocId && store.documents[store.activeDocId]
+      ? store.documents[store.activeDocId]
+      : null;
 
-  const handleContentChange = useCallback((html: string) => {
-    try {
-      localStorage.setItem('cromulent:content', html);
-    } catch {
-      // localStorage full or unavailable
+  // Ensure at least one document exists
+  useEffect(() => {
+    if (!activeDoc) {
+      const newDoc = createDocument();
+      setStore({
+        documents: { [newDoc.id]: newDoc },
+        activeDocId: newDoc.id
+      });
     }
+  }, [activeDoc]);
+
+  // Persist store changes to localStorage
+  useEffect(() => {
+    saveDocuments(store.documents);
+    saveActiveDocId(store.activeDocId);
+  }, [store]);
+
+  const handleContentChange = useCallback(
+    (html: string) => {
+      const id = store.activeDocId;
+      if (!id) return;
+      setStore((prev) => updateDocument(id, prev, { content: html }));
+    },
+    [store.activeDocId]
+  );
+
+  const handleTitleChange = useCallback(
+    (title: string) => {
+      const id = store.activeDocId;
+      if (!id) return;
+      setStore((prev) => updateDocument(id, prev, { title }));
+    },
+    [store.activeDocId]
+  );
+
+  const handleCreateDocument = useCallback(() => {
+    const newDoc = createDocument();
+    setStore((prev) => ({
+      activeDocId: newDoc.id,
+      documents: { [newDoc.id]: newDoc, ...prev.documents }
+    }));
+  }, []);
+
+  const handleDeleteDocument = useCallback((id: string) => {
+    if (!confirm('Delete this page? This cannot be undone.')) {
+      return;
+    }
+    setStore((prev) => deleteDocument(id, prev));
+  }, []);
+
+  const handleSwitchDocument = useCallback((id: string) => {
+    setStore((prev) => ({ ...prev, activeDocId: id }));
   }, []);
 
   const handleLoadModel = useCallback(async () => {
@@ -146,6 +200,8 @@ function App() {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   }, [setTheme]);
 
+  const docList = Object.values(store.documents);
+
   return (
     <SidebarProvider>
       <Sidebar collapsible="icon" variant="inset">
@@ -174,15 +230,39 @@ function App() {
           <SidebarGroup>
             <SidebarGroupLabel>Pages</SidebarGroupLabel>
             <SidebarMenu>
+              {docList.map((doc) => (
+                <SidebarMenuItem key={doc.id}>
+                  <SidebarMenuButton
+                    isActive={doc.id === store.activeDocId}
+                    onClick={() => handleSwitchDocument(doc.id)}
+                    tooltip={doc.title}
+                  >
+                    <FileText className="size-4" />
+                    <span className="truncate">{doc.title}</span>
+                    {docList.length > 1 && (
+                      <SidebarMenuBadge>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteDocument(doc.id);
+                          }}
+                          className="flex items-center justify-center"
+                          aria-label={`Delete ${doc.title}`}
+                        >
+                          <X className="size-3 hover:text-destructive transition-colors" />
+                        </button>
+                      </SidebarMenuBadge>
+                    )}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
               <SidebarMenuItem>
-                <SidebarMenuButton isActive tooltip={documentTitle}>
-                  <FileText />
-                  <span>{documentTitle}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="New page">
-                  <Sparkles />
+                <SidebarMenuButton
+                  onClick={handleCreateDocument}
+                  tooltip="New page"
+                >
+                  <Plus className="size-4" />
                   <span>New page</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -302,13 +382,15 @@ function App() {
             <SidebarTrigger />
           </div>
           <div className="flex flex-1 items-center gap-2">
-            <input
-              type="text"
-              value={documentTitle}
-              onChange={(e) => setDocumentTitle(e.target.value)}
-              className="bg-transparent border-none outline-none text-lg font-medium flex-1 max-w-md focus:ring-0"
-              placeholder="Untitled"
-            />
+            {activeDoc && (
+              <input
+                type="text"
+                value={activeDoc.title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                className="bg-transparent border-none outline-none text-lg font-medium flex-1 max-w-md focus:ring-0"
+                placeholder="Untitled"
+              />
+            )}
           </div>
           <div className="flex items-center gap-2">
             {modelStatus === 'downloading' && (
@@ -335,12 +417,15 @@ function App() {
 
         <main className="flex-1 overflow-auto">
           <div className="max-w-3xl mx-auto py-8 px-4">
-            <DocumentEditor
-              initialContent={initialContent}
-              onAiAssist={handleAiAssist}
-              onContentChange={handleContentChange}
-              modelStatus={modelStatus}
-            />
+            {activeDoc && (
+              <DocumentEditor
+                key={activeDoc.id}
+                initialContent={activeDoc.content}
+                onAiAssist={handleAiAssist}
+                onContentChange={handleContentChange}
+                modelStatus={modelStatus}
+              />
+            )}
           </div>
         </main>
       </SidebarInset>

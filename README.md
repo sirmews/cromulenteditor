@@ -4,7 +4,7 @@
 
 > A document editor with a local AI assistant that runs **entirely in your browser** — no backend, no API keys, no data ever leaves your machine.
 
-CromulentEditor uses modern web technologies to bring a capable text-generation model directly into the browser via [HuggingFace Transformers.js](https://huggingface.co/docs/transformers.js/). It downloads and caches the model using the Origin Private File System (OPFS), then runs inference on-device using WebGPU (with a WASM fallback for unsupported hardware). The result is a fully offline-capable, privacy-preserving writing tool.
+CromulentEditor uses modern web technologies to bring a capable text-generation model directly into the browser via [HuggingFace Transformers.js](https://huggingface.co/docs/transformers.js/). It downloads and caches the model using the browser's [Cache API](https://developer.mozilla.org/en-US/docs/Web/API/Cache), then runs inference on-device using WebGPU (with a WASM fallback for unsupported hardware). The result is a fully offline-capable, privacy-preserving writing tool.
 
 ## Why CromulentEditor?
 
@@ -16,7 +16,7 @@ Most AI-powered editors send your text to a remote server. CromulentEditor does 
 - **Editor**: [Tiptap](https://tiptap.dev/) with a custom slash-command palette (`/`) for formatting and AI actions
 - **Styling**: Tailwind CSS v4 + shadcn/ui components
 - **Local LLM**: `@huggingface/transformers` with WebGPU acceleration and WASM fallback
-- **Model caching**: OPFS via the browser's Cache API — models persist across sessions
+- **Model caching**: Browser Cache API (`transformers-cache` namespace) — models persist across sessions
 - **Quantization**: Three ONNX quantization levels (Q1 / Q2 / Q4) letting users trade quality for speed
 
 ## Features
@@ -27,7 +27,7 @@ Most AI-powered editors send your text to a remote server. CromulentEditor does 
 - **Dark / Light Mode** — Automatic system theme detection with manual toggle via `next-themes`
 - **Document Persistence** — Editor content auto-saves to `localStorage`
 - **WebGPU + WASM** — Uses GPU acceleration when available; seamlessly falls back to CPU inference
-- **OPFS Model Caching** — Models are cached locally so they work offline after the first download
+- **Browser Cache API** — Models are cached locally via the Cache API so they work offline after the first download
 - **Quantization Selector** — Switch between Q1 (~277 MB), Q2 (~482 MB), and Q4 (~1.0 GB) model variants
 
 ## Tech Stack
@@ -42,7 +42,7 @@ Most AI-powered editors send your text to a remote server. CromulentEditor does 
 | Local LLM | [@huggingface/transformers](https://huggingface.co/docs/transformers.js/) |
 | Model | [Bonsai-1.7B-ONNX](https://huggingface.co/onnx-community/Bonsai-1.7B-ONNX) |
 | Acceleration | WebGPU (primary) / WASM (fallback) |
-| State | `localStorage` (documents), OPFS Cache API (models) |
+| State | `localStorage` (documents), Browser Cache API (`transformers-cache`, models) |
 
 ## Getting Started
 

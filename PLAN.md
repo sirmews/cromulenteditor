@@ -1,7 +1,7 @@
 # CromulentEditor — Local Bonsai Integration Plan
 
 ## Goal
-Replace the remote HuggingFace Space API call with fully offline, in-browser LLM inference using `@huggingface/transformers` + WebGPU, with OPFS model caching. Follow patterns established in `../textcast`.
+Replace the remote HuggingFace Space API call with fully offline, in-browser LLM inference using `@huggingface/transformers` + WebGPU, with browser Cache API model caching. Follow patterns established in `../textcast`.
 
 ---
 
@@ -42,7 +42,7 @@ Replace the remote HuggingFace Space API call with fully offline, in-browser LLM
 
 ### 2.2 Create `src/lib/bonsai.ts` — local inference engine
 - [x] Singleton text-generation pipeline with WebGPU/WASM fallback
-- [x] `env.useBrowserCache = true` for auto OPFS caching
+- [x] `env.useBrowserCache = true` for auto browser Cache API caching
 - [x] `checkWebGPU()`, `loadModel()`, `generate()`, `isModelLoaded()`, `clearModels()`
 - [x] Model: `onnx-community/Bonsai-1.7B` (~290MB)
 
@@ -79,7 +79,7 @@ Replace the remote HuggingFace Space API call with fully offline, in-browser LLM
 | `package.json` | Add `@huggingface/transformers`, `@tiptap/suggestion`, `next-themes` |
 | `src/main.tsx` | Wrap `App` in `ThemeProvider` |
 | `src/lib/ai.ts` | ✅ Created — shared types + prompts, local engine |
-| `src/lib/bonsai.ts` | ✅ Created — local inference engine (singleton, WebGPU, OPFS) |
+| `src/lib/bonsai.ts` | ✅ Created — local inference engine (singleton, WebGPU, browser Cache API) |
 | `src/App.tsx` | Fix theme with `useTheme()`, add persistence, model loading state |
 | `src/components/editor/DocumentEditor.tsx` | Fix setContent, click-outside, model status, slash commands |
 | `src/components/editor/SlashCommandExtension.tsx` | ✅ New — Tiptap extension with `@tiptap/suggestion` |
@@ -90,5 +90,5 @@ Replace the remote HuggingFace Space API call with fully offline, in-browser LLM
 
 ## Reference: textcast patterns to follow
 - `../textcast/src/lib/transcription/transformers-whisper.ts` — model loading, WebGPU check, singleton, progress
-- `../textcast/src/lib/storage.ts` — OPFS abstraction (not needed; transformers.js handles caching)
-- `../textcast/src/App.tsx` lines 86-106 — "Clear AI Models" button (iterates OPFS root, removes `transformers-cache` entries)
+- `../textcast/src/lib/storage.ts` — storage abstraction (not needed; transformers.js handles caching)
+- `../textcast/src/App.tsx` lines 86-106 — "Clear AI Models" button (iterates Cache API entries, removes `transformers-cache` entries)

@@ -79,6 +79,7 @@ src/
     utils.ts                      # cn() helper (clsx + tailwind-merge)
     bonsai.ts                     # Model loader: pipeline init, WebGPU/WASM detection, cache mgmt
     ai.ts                         # AI action definitions, prompt templates, queryBonsai() wrapper
+    storage.ts                    # Multi-document localStorage API (CRUD, persistence, migration)
 ```
 
 ---
@@ -101,7 +102,7 @@ src/
 - **Library**: `@huggingface/transformers` v4
 - **Model**: `onnx-community/Bonsai-1.7B-ONNX`
 - **Execution**: WebGPU (primary) with WASM fallback
-- **Caching**: Browser Cache API under `transformers-cache` namespace (OPFS-like persistence)
+- **Caching**: Browser Cache API under `transformers-cache` namespace
 - **Quantization levels**: Q1 (~277 MB), Q2 (~482 MB), Q4 (~1.0 GB)
 - **Pipeline**: `text-generation` via `pipeline('text-generation', MODEL_ID, ...)`
 - **API**: `generate(messages: ChatMessage[])` → returns assistant message content
@@ -161,9 +162,36 @@ src/
 
 ## Data Persistence
 
-- **Document content**: Auto-saves to `localStorage` under key `cromulent:content` on every editor update
-- **Document title**: React state only (not persisted)
-- **AI model cache**: Browser Cache API (`transformers-cache`) — survives page reloads, can be cleared via sidebar UI
+### Documents (Multi-page storage)
+
+Documents are stored as structured JSON in `localStorage` via `src/lib/storage.ts`:
+
+- **`cromulent:documents`** — `Record<string, Document>` keyed by document ID
+- **`cromulent:activeDocId`** — ID of the currently open document
+
+Each `Document` contains:
+```ts
+interface Document {
+  id: string;           // crypto.randomUUID()
+  title: string;        // persisted, editable via header input
+  content: string;      // Tiptap HTML
+  createdAt: number;    // timestamp
+  updatedAt: number;    // timestamp (updated on every content/title change)
+}
+```
+
+- **Auto-save**: Content saves on every `onUpdate` from Tiptap
+- **Title persistence**: Header title input writes directly to the store
+- **Migration**: On first load, legacy `cromulent:content` is converted into a proper Document
+- **CRUD**: Sidebar lists all pages with click-to-switch, create, and delete
+
+### AI Model Cache
+
+- **Mechanism**: Browser Cache API (`transformers-cache` namespace)
+- **Trigger**: First AI use downloads the model (~277 MB–1.0 GB)
+- **Persistence**: Survives page reloads and browser restarts
+- **Clearing**: Available via sidebar "Clear AI cache" button
+- **Note**: Model cache is tied to the browser's cache storage. Clearing "cached images and files" in browser settings will delete it. Document storage in `localStorage` is separate and unaffected.
 
 ---
 
