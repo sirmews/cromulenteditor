@@ -182,7 +182,7 @@ interface Document {
 
 - **Auto-save**: Content saves on every `onUpdate` from Tiptap
 - **Title persistence**: Header title input writes directly to the store
-- **Migration**: On first load, legacy `cromulent:content` is converted into a proper Document
+- **First-time seeding**: On first load with no existing documents, a default project-notes document is created automatically
 - **CRUD**: Sidebar lists all pages with click-to-switch, create, and delete
 
 ### AI Model Cache
