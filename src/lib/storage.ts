@@ -28,18 +28,12 @@ export function loadStore(): DocumentStore {
       return { documents, activeDocId: validActive };
     }
 
-    // Migrate from legacy single-document format
-    const legacyContent = localStorage.getItem('cromulent:content');
-    const legacyTitle = localStorage.getItem('cromulent:title');
-    if (legacyContent) {
-      const doc = createDocument(legacyTitle || 'Untitled', legacyContent);
-      const documents = { [doc.id]: doc };
-      saveDocuments(documents);
-      saveActiveDocId(doc.id);
-      return { documents, activeDocId: doc.id };
-    }
-
-    return { documents: {}, activeDocId: null };
+    // Fresh load — seed with a project notes document
+    const welcome = createWelcomeDocument();
+    const documents = { [welcome.id]: welcome };
+    saveDocuments(documents);
+    saveActiveDocId(welcome.id);
+    return { documents, activeDocId: welcome.id };
   } catch {
     return { documents: {}, activeDocId: null };
   }
@@ -66,6 +60,44 @@ export function createDocument(
     id: crypto.randomUUID(),
     title,
     content,
+    createdAt: now,
+    updatedAt: now
+  };
+}
+
+export function createWelcomeDocument(): Document {
+  const now = Date.now();
+  return {
+    id: crypto.randomUUID(),
+    title: 'Cromulent — project notes',
+    content: `<h1>Cromulent Editor</h1>
+<p>Privacy-first document editor with a local AI assistant. Everything runs in the browser. No backend, no API keys, no data leaves the machine.</p>
+<h2>Stack</h2>
+<ul>
+<li>React 19 + TypeScript + Vite 8</li>
+<li>Tailwind CSS v4 + shadcn/ui</li>
+<li>Tiptap 2 for the editor</li>
+<li>@huggingface/transformers for local LLM inference (WebGPU / WASM fallback)</li>
+<li>Model: Bonsai-1.7B-ONNX (~277 MB–1.0 GB depending on quantization)</li>
+</ul>
+<h2>Storage</h2>
+<ul>
+<li>Documents: <code>localStorage</code> as structured JSON (multi-doc)</li>
+<li>AI model cache: Browser Cache API under <code>transformers-cache</code></li>
+</ul>
+<h2>Commands</h2>
+<ul>
+<li><code>npm run dev</code> — dev server (5173)</li>
+<li><code>npm run build</code> — TS check + production build</li>
+<li><code>npm run lint</code> — biome check</li>
+<li><code>npm run lint:ai</code> — ast-grep AI coding standards</li>
+</ul>
+<h2>Open questions / todo</h2>
+<ul>
+<li>[ ] IndexedDB migration when localStorage fills up</li>
+<li>[ ] OPFS for documents if we ever need real file system access</li>
+<li>[ ] Better model cache durability (separate from browser "clear cache")</li>
+</ul>`,
     createdAt: now,
     updatedAt: now
   };
