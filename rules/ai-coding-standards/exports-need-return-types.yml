@@ -1,0 +1,31 @@
+id: exports-need-return-types
+category: type-safety
+severity: error
+language: TypeScript
+message: |
+  Exported functions MUST have explicit return types for API clarity.
+  The "Signature Tells the Story" rule: If an LLM or developer is calling a function from another file, they shouldn't have to read the function body to guess what it returns. TypeScript inference is great for locals, but terrible for APIs.
+
+  Bad:
+    export function getUser(id: string) { ... }
+    export const fetchUser = async () => { ... }
+
+  Good:
+    export function getUser(id: string): Promise<User | null> { ... }
+    export const fetchUser = async (): Promise<User | null> => { ... }
+rule:
+  any:
+    - all:
+        - pattern: 'export function $NAME($$$ARGS) { $$$BODY }'
+        - not:
+            pattern: 'export function $NAME($$$ARGS): $TYPE { $$$BODY }'
+    - all:
+        - pattern: 'export const $NAME = ($$$ARGS) => { $$$BODY }'
+        - not:
+            pattern: 'export const $NAME = ($$$ARGS): $TYPE => { $$$BODY }'
+    - all:
+        - pattern: 'export const $NAME = async ($$$ARGS) => { $$$BODY }'
+        - not:
+            pattern: 'export const $NAME = async ($$$ARGS): $TYPE => { $$$BODY }'
+files:
+  - 'src/lib/**/*.ts'

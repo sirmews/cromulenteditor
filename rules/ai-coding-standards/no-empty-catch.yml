@@ -1,0 +1,11 @@
+id: no-empty-catch
+category: error-handling
+severity: warning
+language: TypeScript
+message: "Empty catch block without explanation. Add a comment explaining why errors are ignored."
+rule:
+  regex: '^\s*catch\s*\{[\s]*\}'
+  kind: catch_clause
+files:
+  - 'src/**/*.ts'
+  - 'src/**/*.tsx'

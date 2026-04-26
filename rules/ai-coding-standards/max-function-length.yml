@@ -1,0 +1,16 @@
+id: max-function-length
+category: code-quality
+severity: warning
+language: TypeScript
+message: |
+  Functions should be under 100 lines (or ~2000 characters). Consider splitting into smaller, focused functions.
+  The "Single Responsibility" rule: When functions get too long, their "story" becomes a convoluted novel, forcing developers to write inline comments like "// Step 1: Format data". Break the logic down into smaller, well-named helper functions that tell a sequential story.
+rule:
+  any:
+    - kind: function_declaration
+      regex: '.{2000,}'
+    - kind: arrow_function
+      regex: '.{2000,}'
+files:
+  - 'src/**/*.ts'
+  - 'src/**/*.tsx'

@@ -1,0 +1,12 @@
+id: no-any-in-lib
+category: type-safety
+severity: error
+language: TypeScript
+message: |
+  Avoid using `any` in library code. Use `unknown` if the type is truly unknown, or define a proper type.
+  The "No Escape Hatch" rule: `any` defeats the purpose of TypeScript and makes it impossible for LLMs (and humans) to reason about the code without reading every call site.
+rule:
+  kind: predefined_type
+  regex: '^any$'
+files:
+  - 'src/lib/**/*.ts'

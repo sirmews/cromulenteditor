@@ -1,0 +1,33 @@
+id: no-inline-async-handlers
+category: clean-code
+severity: warning
+language: tsx
+message: |
+  Avoid defining complex `async` functions directly inline inside JSX props like `onClick` or `onSubmit`.
+  The "Named Actions" rule: Extract this logic into a descriptively named function above the return statement. The JSX tells the "What", the named function tells the "How". This makes the component much easier to read and test.
+
+  Bad:
+    <Button onClick={async (e) => {
+      e.preventDefault();
+      setIsLoading(true);
+      await fetch('/api/story');
+    }}>Publish</Button>
+
+  Good:
+    async function handlePublishStory(e) {
+      e.preventDefault();
+      setIsLoading(true);
+      await fetch('/api/story');
+    }
+    // ...
+    <Button onClick={handlePublishStory}>Publish</Button>
+rule:
+  all:
+    - any:
+        - pattern: '$PROP={async ($$$ARGS) => { $$$BODY }}'
+        - pattern: '$PROP={async function($$$ARGS) { $$$BODY }}'
+    - has:
+        field: property
+        regex: '^on[A-Z]'
+files:
+  - 'src/**/*.tsx'

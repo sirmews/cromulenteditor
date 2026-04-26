@@ -1,0 +1,19 @@
+id: no-default-exports
+category: modularity
+severity: warning
+language: TypeScript
+message: |
+  Prefer named exports over default exports.
+  The "Named API" rule: Named exports make it easier for LLMs to scan a file's public surface area, enable better IDE autocomplete, and prevent renaming inconsistencies across imports.
+
+  Bad:
+    export default function App() { ... }
+
+  Good:
+    export function App() { ... }
+rule:
+  pattern: 'export default $EXPORT'
+files:
+  - 'src/lib/**/*.ts'
+  - 'src/hooks/**/*.ts'
+  - 'src/components/**/*.tsx'
