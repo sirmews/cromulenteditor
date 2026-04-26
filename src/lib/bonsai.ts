@@ -35,7 +35,8 @@ let currentDtype: ModelDtype = 'q1';
 export async function checkWebGPU(): Promise<boolean> {
   if (typeof navigator === 'undefined' || !('gpu' in navigator)) return false;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // WebGPU types are not universally available in TypeScript DOM libs.
+    // ast-grep-ignore: no-any-in-lib
     const adapter = await (navigator as any).gpu.requestAdapter();
     return !!adapter;
   } catch {
