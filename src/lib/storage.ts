@@ -39,16 +39,28 @@ export function loadStore(): DocumentStore {
   }
 }
 
+function withStorageWriteGuard(write: () => void): void {
+  try {
+    write();
+  } catch {
+    // localStorage may fail (quota exceeded / blocked storage); keep in-memory state alive.
+  }
+}
+
 export function saveDocuments(documents: Record<string, Document>): void {
-  localStorage.setItem(STORAGE_KEY_DOCS, JSON.stringify(documents));
+  withStorageWriteGuard(() => {
+    localStorage.setItem(STORAGE_KEY_DOCS, JSON.stringify(documents));
+  });
 }
 
 export function saveActiveDocId(id: string | null): void {
-  if (id) {
-    localStorage.setItem(STORAGE_KEY_ACTIVE, id);
-  } else {
-    localStorage.removeItem(STORAGE_KEY_ACTIVE);
-  }
+  withStorageWriteGuard(() => {
+    if (id) {
+      localStorage.setItem(STORAGE_KEY_ACTIVE, id);
+    } else {
+      localStorage.removeItem(STORAGE_KEY_ACTIVE);
+    }
+  });
 }
 
 export function createDocument(
